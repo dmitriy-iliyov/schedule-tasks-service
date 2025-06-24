@@ -1,0 +1,28 @@
+package com.aidcompass.models;
+
+import com.aidcompass.exceptions.TaskStatusNotFoundByCodeException;
+
+import java.util.Arrays;
+
+public enum TaskStatus {
+    COMPLETED(0),
+    NOT_COMPLETED(1),
+    ERROR(2);
+
+    private final int code;
+
+    TaskStatus(int code) {
+        this.code = code;
+    }
+
+    public int getCode() {
+        return this.code;
+    }
+
+    public static TaskStatus fromCode(int code) {
+        return Arrays.stream(TaskStatus.values())
+                .filter(taskStatus -> taskStatus.getCode() == code)
+                .findFirst()
+                .orElseThrow(TaskStatusNotFoundByCodeException::new);
+    }
+}
