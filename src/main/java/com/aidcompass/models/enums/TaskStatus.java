@@ -1,6 +1,7 @@
-package com.aidcompass.models;
+package com.aidcompass.models.enums;
 
-import com.aidcompass.exceptions.TaskStatusNotFoundByCodeException;
+
+import com.aidcompass.exceptions.models.TaskStatusNotFoundByCodeException;
 
 import java.util.Arrays;
 

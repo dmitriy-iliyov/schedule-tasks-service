@@ -1,8 +1,9 @@
 package com.aidcompass.models.entity;
 
-import com.aidcompass.models.TaskStatus;
-import com.aidcompass.models.TaskStatusConverter;
-import com.aidcompass.task_type.models.TaskTypeEntity;
+import com.aidcompass.models.enums.TaskStatus;
+import com.aidcompass.models.enums.TaskStatusConverter;
+import com.aidcompass.models.enums.TaskType;
+import com.aidcompass.models.enums.TaskTypeConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,9 +22,9 @@ public class TaskEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task_type_id", nullable = false)
-    private TaskTypeEntity typeEntity;
+    @Column(name = "task_type_code", nullable = false)
+    @Convert(converter = TaskTypeConverter.class)
+    private TaskType type;
 
     @Column(name = "task_status_code", nullable = false)
     @Convert(converter = TaskStatusConverter.class)
@@ -38,8 +39,8 @@ public class TaskEntity {
     @Column(name = "end_t")
     private Instant end;
 
-    public TaskEntity(TaskTypeEntity typeEntity, TaskStatus taskStatus, int batchSize, Instant start, Instant end) {
-        this.typeEntity = typeEntity;
+    public TaskEntity(TaskType type, TaskStatus taskStatus, int batchSize, Instant start, Instant end) {
+        this.type = type;
         this.status = taskStatus;
         this.batchSize = batchSize;
         this.start = start;

@@ -1,7 +1,8 @@
-package com.aidcompass.exceptions;
+package com.aidcompass.exceptions.models;
 
-import com.aidcompass.models.BaseNotFoundException;
-import com.aidcompass.models.dto.ErrorDto;
+
+import com.aidcompass.exceptions.models.base.BaseNotFoundException;
+import com.aidcompass.exceptions.models.dto.ErrorDto;
 
 public class TaskStatusNotFoundByCodeException extends BaseNotFoundException {
 

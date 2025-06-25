@@ -1,6 +1,6 @@
-package com.aidcompass.models;
+package com.aidcompass.models.enums;
 
-import com.aidcompass.exceptions.TaskStatusConvertException;
+import com.aidcompass.exceptions.models.TaskStatusConvertException;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
