@@ -45,7 +45,7 @@ public class ScheduleCleanUpService {
 
                 List<Long> deletedIds = restClient.deleteIntervalsBatchBeforeWeakStart(batchSize);
 
-                if (deletedIds.isEmpty()) {
+                if (deletedIds.isEmpty() || deletedIds.size() < batchSize) {
                     continueFlagEntity.setShouldContinue(false);
                     continueFlagRepository.save(continueFlagEntity);
                 }
@@ -60,7 +60,7 @@ public class ScheduleCleanUpService {
             taskRepository.save(taskEntity);
             return;
         }
-        log.info("shouldContinue flag={}", false);
+        log.info("shouldContinue={}", false);
     }
 
     @Transactional
@@ -81,9 +81,9 @@ public class ScheduleCleanUpService {
 
                 try {
 
-                    List<Long> ids = restClient.markAppointmentBatchAsSkipped(batchSize);
+                    List<Long> deletedIds = restClient.markAppointmentBatchAsSkipped(batchSize);
 
-                    if (ids.isEmpty()) {
+                    if (deletedIds.isEmpty() || deletedIds.size() < batchSize) {
                         continueFlagEntity.setShouldContinue(false);
                         continueFlagRepository.save(continueFlagEntity);
                     }

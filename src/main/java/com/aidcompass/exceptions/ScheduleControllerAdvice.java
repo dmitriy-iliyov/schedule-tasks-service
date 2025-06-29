@@ -80,6 +80,7 @@ public class ScheduleControllerAdvice {
                 "500",
                 "Unexpected server error.",
                 null);
+        log.error(throwable.getMessage());
         log.error(Arrays.toString(throwable.getStackTrace()));
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

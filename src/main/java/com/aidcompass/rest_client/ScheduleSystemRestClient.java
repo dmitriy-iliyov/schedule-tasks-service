@@ -1,56 +1,30 @@
 package com.aidcompass.rest_client;
 
 import com.aidcompass.exceptions.ApiException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
 public class ScheduleSystemRestClient {
 
-    @Value("${service.name}")
-    private String serviceName;
-
-    @Value("${service.key}")
-    private String serviceKey;
-
     private final RestClient restClient;
-    private final static String BEARER_TEMPLATE = "Bearer %s";
+    private final static int MAX_ATTEMPT = 1;
 
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void loginAfterApplicationStart() {
-        login();
-    }
-
-    public String login() {
-        Map<String, String> credentials = Map.of(
-                "service_name", serviceName,
-                "service_key", serviceKey
-        );
-        try {
-            return restClient
-                    .post()
-                    .uri("/auth/login")
-                    .body(credentials)
-                    .retrieve()
-                    .body(String.class);
-        } catch (RestClientException e) {
-            log.error(e.getMessage());
-            throw new ApiException(e.getMessage());
-        }
-    }
 
     public List<Long> deleteIntervalsBatchBeforeWeakStart(int batchSize) {
+        return deleteIntervalsBatchBeforeWeakStart(batchSize, 0);
+    }
+
+    private List<Long> deleteIntervalsBatchBeforeWeakStart(int batchSize, int attempt) {
         try {
             return restClient
                     .delete()
@@ -58,16 +32,25 @@ public class ScheduleSystemRestClient {
                             .path("/intervals/past/batch")
                             .queryParam("batch_size", batchSize)
                             .build())
-//                    .header("Authorization", BEARER_TEMPLATE.formatted(jwt))
                     .retrieve()
                     .body(new ParameterizedTypeReference<List<Long>>() {});
-        } catch (RestClientException e) {
+        } catch (RestClientResponseException e) {
             log.error(e.getMessage());
+            if (e.getStatusCode().equals(HttpStatus.UNAUTHORIZED) && attempt < MAX_ATTEMPT) {
+                return deleteIntervalsBatchBeforeWeakStart(batchSize, ++attempt);
+            }
             throw new ApiException(e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error while calling cleanup endpoint", e);
+            throw new ApiException("Unexpected error while deleting intervals!");
         }
     }
 
     public List<Long> markAppointmentBatchAsSkipped(int batchSize) {
+        return markAppointmentBatchAsSkipped(batchSize, 0);
+    }
+
+    public List<Long> markAppointmentBatchAsSkipped(int batchSize, int attempt) {
         try {
             return restClient
                     .patch()
@@ -77,8 +60,11 @@ public class ScheduleSystemRestClient {
                             .build())
                     .retrieve()
                     .body(new ParameterizedTypeReference<List<Long>>() {});
-        } catch (RestClientException e) {
+        } catch (RestClientResponseException e) {
             log.error(e.getMessage());
+            if (e.getStatusCode().equals(HttpStatus.UNAUTHORIZED) && attempt < MAX_ATTEMPT) {
+                return markAppointmentBatchAsSkipped(batchSize, ++attempt);
+            }
             throw new ApiException(e.getMessage());
         }
     }
