@@ -20,89 +20,85 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ScheduleCleanUpServiceImpl implements ScheduleCleanUpService {
+public class ScheduleCleanUpService {
 
     private final TaskRepository taskRepository;
     private final ContinueFlagRepository continueFlagRepository;
     private final ScheduleSystemRestClient restClient;
 
 
-    @Scheduled(cron = "0 */5 0-15 * * *")
+    @Scheduled(cron = "0 */5 0-3 * * *")
     @Transactional
-    @Override
     public void deletePastIntervalBatch() {
-        ContinueFlagEntity continueFlagEntity = continueFlagRepository.findByType(TaskType.DELETE_INTERVAL).orElseThrow(
+        log.info("START deletePastIntervalBatch");
+        ContinueFlagEntity continueFlagEntity = continueFlagRepository.findByType(TaskType.DELETE_INTERVAL_BATCH).orElseThrow(
                 ContinueFlagNotFoundByTypeException::new
         );
         if (continueFlagEntity.isShouldContinue()) {
             int batchSize = continueFlagEntity.getBatchSize();
             TaskEntity taskEntity = new TaskEntity(
-                    TaskType.DELETE_INTERVAL,
-                    TaskStatus.NOT_COMPLETED,
+                    TaskType.DELETE_INTERVAL_BATCH,
+                    TaskStatus.PROCESSED,
                     batchSize,
                     Instant.now(),
                     null
             );
             taskEntity = taskRepository.save(taskEntity);
             try {
-
                 List<Long> deletedIds = restClient.deleteIntervalsBatchBeforeWeakStart(batchSize);
-
                 if (deletedIds.isEmpty() || deletedIds.size() < batchSize) {
                     continueFlagEntity.setShouldContinue(false);
-                    continueFlagRepository.save(continueFlagEntity);
                 }
-
                 taskEntity.setStatus(TaskStatus.COMPLETED);
             } catch (Exception e) {
-                log.error("Error when deleting intervals: {}", (Object[]) e.getStackTrace());
+                log.error("Error when deleting intervals", e);
                 taskEntity.setStatus(TaskStatus.ERROR);
                 throw e;
+            } finally {
+                taskEntity.setEnd(Instant.now());
+                taskRepository.save(taskEntity);
+                continueFlagRepository.save(continueFlagEntity);
+                log.info("END deletePastIntervalBatch");
             }
-            taskEntity.setEnd(Instant.now());
-            taskRepository.save(taskEntity);
             return;
         }
-        log.info("shouldContinue={}", false);
+        log.info("Task {} skipped: shouldContinue=false", TaskType.DELETE_INTERVAL_BATCH);
     }
 
-    @Scheduled(cron = "0 */5 0-15 * * *")
+    @Scheduled(cron = "0 */5 0-4 * * *")
     @Transactional
-    @Override
     public void markPastAppointmentBatchSkipped() {
-        ContinueFlagEntity continueFlagEntity = continueFlagRepository.findByType(TaskType.MARK_APPOINTMENT_SKIPPED)
+        log.info("START markPastAppointmentBatchSkipped");
+        ContinueFlagEntity continueFlagEntity = continueFlagRepository.findByType(TaskType.MARK_APPOINTMENT_BATCH_SKIP)
                 .orElseThrow(ContinueFlagNotFoundByTypeException::new);
         if (continueFlagEntity.isShouldContinue()) {
             int batchSize = continueFlagEntity.getBatchSize();
+            TaskEntity taskEntity = new TaskEntity(
+                    TaskType.MARK_APPOINTMENT_BATCH_SKIP,
+                    TaskStatus.PROCESSED,
+                    batchSize,
+                    Instant.now(),
+                    null
+            );
+            taskEntity = taskRepository.save(taskEntity);
             try {
-                TaskEntity taskEntity = new TaskEntity(
-                        TaskType.MARK_APPOINTMENT_SKIPPED,
-                        TaskStatus.NOT_COMPLETED,
-                        batchSize,
-                        Instant.now(),
-                        null
-                );
-                taskRepository.save(taskEntity);
-
-                try {
-
-                    List<Long> deletedIds = restClient.markAppointmentBatchAsSkipped(batchSize);
-
-                    if (deletedIds.isEmpty() || deletedIds.size() < batchSize) {
-                        continueFlagEntity.setShouldContinue(false);
-                        continueFlagRepository.save(continueFlagEntity);
-                    }
-
-                    taskEntity.setStatus(TaskStatus.COMPLETED);
-                } catch (Exception e) {
-                    log.error("Error when executing task: {}", (Object[]) e.getStackTrace());
-                    taskEntity.setStatus(TaskStatus.ERROR);
+                List<Long> deletedIds = restClient.markAppointmentBatchAsSkipped(batchSize);
+                if (deletedIds.isEmpty() || deletedIds.size() < batchSize) {
+                    continueFlagEntity.setShouldContinue(false);
                 }
+                taskEntity.setStatus(TaskStatus.COMPLETED);
+            } catch (Exception e) {
+                log.error("Error when executing task: ", e);
+                taskEntity.setStatus(TaskStatus.ERROR);
+                throw e;
+            } finally {
                 taskEntity.setEnd(Instant.now());
                 taskRepository.save(taskEntity);
-            } catch(Exception e) {
-                log.error("Error when start task: {}", (Object[]) e.getStackTrace());
+                continueFlagRepository.save(continueFlagEntity);
+                log.info("END markPastAppointmentBatchSkipped");
             }
+            return;
         }
+        log.info("Task {} skipped: shouldContinue=false", TaskType.MARK_APPOINTMENT_BATCH_SKIP);
     }
 }

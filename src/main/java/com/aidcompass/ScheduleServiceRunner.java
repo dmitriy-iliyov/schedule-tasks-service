@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication
 @EnableJpaRepositories
 @EnableTransactionManagement
-@EnableScheduling
 public class ScheduleServiceRunner {
     public static void main(String [] args) {
         Dotenv dotenv = Dotenv.configure().filename(".env").load();

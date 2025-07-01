@@ -1,8 +1,6 @@
 package com.aidcompass.rest_client;
 
 import com.aidcompass.exceptions.ApiException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -11,6 +9,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -50,7 +49,7 @@ public class ScheduleSystemRestClient {
         return markAppointmentBatchAsSkipped(batchSize, 0);
     }
 
-    public List<Long> markAppointmentBatchAsSkipped(int batchSize, int attempt) {
+    private List<Long> markAppointmentBatchAsSkipped(int batchSize, int attempt) {
         try {
             return restClient
                     .patch()
@@ -64,6 +63,31 @@ public class ScheduleSystemRestClient {
             log.error(e.getMessage());
             if (e.getStatusCode().equals(HttpStatus.UNAUTHORIZED) && attempt < MAX_ATTEMPT) {
                 return markAppointmentBatchAsSkipped(batchSize, ++attempt);
+            }
+            throw new ApiException(e.getMessage());
+        }
+    }
+
+    public Boolean notifyBatch(int batchSize, int page) {
+        Map<String, String> requestBody =
+                Map.of(
+                        "batch_size", String.valueOf(batchSize),
+                        "page", String.valueOf(page)
+                );
+        return notifyBatch(requestBody, 0);
+    }
+
+    private Boolean notifyBatch(Map<String, String> requestBody, int attempt) {
+        try {
+            return restClient
+                    .post()
+                    .uri("/appointments/batch/remind")
+                    .body(requestBody)
+                    .retrieve()
+                    .body(Boolean.class);
+        } catch (RestClientResponseException e) {
+            if (e.getStatusCode().equals(HttpStatus.UNAUTHORIZED) && attempt < MAX_ATTEMPT) {
+                return notifyBatch(requestBody, ++attempt);
             }
             throw new ApiException(e.getMessage());
         }

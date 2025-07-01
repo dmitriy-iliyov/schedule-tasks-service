@@ -3,6 +3,7 @@ package com.aidcompass;
 import com.aidcompass.models.dto.ContinueFlagDto;
 import com.aidcompass.services.ContinueFlagService;
 import com.aidcompass.services.ScheduleCleanUpService;
+import com.aidcompass.services.ScheduleNotificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class SystemScheduleController {
 
     private final ScheduleCleanUpService cleanUpService;
+    private final ScheduleNotificationService notificationService;
     private final ContinueFlagService continueFlagService;
 
 
@@ -36,6 +38,14 @@ public class SystemScheduleController {
     @PatchMapping("/appointments/batch/skip")
     public ResponseEntity<?> markAppointmentBatchSkipped() {
         cleanUpService.markPastAppointmentBatchSkipped();
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
+    @PostMapping("/appointments/batch/remind")
+    public ResponseEntity<?> remindBatchAppointment() {
+        notificationService.notifyBatchBeforeAppointment();
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .build();
