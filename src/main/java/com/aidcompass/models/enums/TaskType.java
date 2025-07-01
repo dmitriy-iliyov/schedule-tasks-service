@@ -6,8 +6,8 @@ import lombok.Getter;
 import java.util.Arrays;
 
 public enum TaskType {
-    DELETE_INTERVAL(0),
-    MARK_APPOINTMENT_SKIPPED(1),
+    DELETE_INTERVAL_BATCH(0),
+    MARK_APPOINTMENT_BATCH_SKIP(1),
     NOTIFY_BEFORE_APPOINTMENT(2);
 
     @Getter

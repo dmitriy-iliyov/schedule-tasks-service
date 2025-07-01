@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @Entity
@@ -33,11 +34,17 @@ public class TaskEntity {
     @Column(name = "batch_size", nullable = false)
     private int batchSize;
 
+    @Column(name = "page_number")
+    private int page;
+
     @Column(name = "start_t", nullable = false)
     private Instant start;
 
     @Column(name = "end_t")
     private Instant end;
+
+    @Column(name = "executionTime")
+    private long executionTime;
 
     public TaskEntity(TaskType type, TaskStatus taskStatus, int batchSize, Instant start, Instant end) {
         this.type = type;
@@ -45,5 +52,23 @@ public class TaskEntity {
         this.batchSize = batchSize;
         this.start = start;
         this.end = end;
+    }
+
+    public TaskEntity(TaskType type, TaskStatus taskStatus, int batchSize, int page, Instant start, Instant end) {
+        this.type = type;
+        this.status = taskStatus;
+        this.batchSize = batchSize;
+        this.page = page;
+        this.start = start;
+        this.end = end;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        if (this.end != null) {
+            this.executionTime = Duration.between(start, end).toSeconds();
+        } else {
+            this.executionTime = Duration.between(start, Instant.now()).toSeconds();
+        }
     }
 }

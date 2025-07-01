@@ -28,9 +28,19 @@ public class ContinueFlagEntity {
     @Column(name = "batch_size", nullable = false)
     private int batchSize;
 
+    @Column(name = "page_number")
+    private int page;
+
     public ContinueFlagEntity(TaskType type, boolean shouldContinue, int batchSize) {
         this.type = type;
         this.shouldContinue = shouldContinue;
         this.batchSize = batchSize;
+    }
+
+    public ContinueFlagEntity(TaskType type, boolean shouldContinue, int batchSize, int page) {
+        this.type = type;
+        this.shouldContinue = shouldContinue;
+        this.batchSize = batchSize;
+        this.page = page;
     }
 }

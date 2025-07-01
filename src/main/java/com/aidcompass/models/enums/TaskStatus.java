@@ -6,8 +6,8 @@ import com.aidcompass.exceptions.models.TaskStatusNotFoundByCodeException;
 import java.util.Arrays;
 
 public enum TaskStatus {
-    COMPLETED(0),
-    NOT_COMPLETED(1),
+    PROCESSED(0),
+    COMPLETED(1),
     ERROR(2);
 
     private final int code;
