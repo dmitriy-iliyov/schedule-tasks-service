@@ -10,6 +10,7 @@ import com.aidcompass.repositories.TaskRepository;
 import com.aidcompass.rest_client.ScheduleSystemRestClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +20,22 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ScheduleCleanUpService {
+public class ScheduleCleanUpServiceImpl implements ScheduleCleanUpService {
 
     private final TaskRepository taskRepository;
     private final ContinueFlagRepository continueFlagRepository;
     private final ScheduleSystemRestClient restClient;
 
 
+    @Scheduled(cron = "0 */5 0-15 * * *")
     @Transactional
+    @Override
     public void deletePastIntervalBatch() {
         ContinueFlagEntity continueFlagEntity = continueFlagRepository.findByType(TaskType.DELETE_INTERVAL).orElseThrow(
                 ContinueFlagNotFoundByTypeException::new
         );
-        int batchSize = continueFlagEntity.getBatchSize();
         if (continueFlagEntity.isShouldContinue()) {
+            int batchSize = continueFlagEntity.getBatchSize();
             TaskEntity taskEntity = new TaskEntity(
                     TaskType.DELETE_INTERVAL,
                     TaskStatus.NOT_COMPLETED,
@@ -63,7 +66,9 @@ public class ScheduleCleanUpService {
         log.info("shouldContinue={}", false);
     }
 
+    @Scheduled(cron = "0 */5 0-15 * * *")
     @Transactional
+    @Override
     public void markPastAppointmentBatchSkipped() {
         ContinueFlagEntity continueFlagEntity = continueFlagRepository.findByType(TaskType.MARK_APPOINTMENT_SKIPPED)
                 .orElseThrow(ContinueFlagNotFoundByTypeException::new);
