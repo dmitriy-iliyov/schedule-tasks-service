@@ -4,7 +4,7 @@
 
 ## Overview
 
-This repository contains the **Scheduler Backend** for the **Aid Compass** platform.  
+This repository contains the system task scheduler and orchestrator backend for the **Aid Compass** platform.  
 It is responsible for orchestrating scheduled tasks and interacting with the core backend service.
 
 Project components:
