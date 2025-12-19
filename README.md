@@ -20,7 +20,7 @@ Project components:
 ## Non-functional Requirements
 
 - API for configuring schedule and execution properties in runtime;
-- HTTPS connection with main backend;
+- HTTPS connection with core backend;
 
 ## Run
 
