@@ -15,12 +15,6 @@ public class BearerTokenInterceptor implements ClientHttpRequestInterceptor {
 
     private final LoginRestClient restClient;
 
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void loginAfterApplicationStart() {
-        restClient.login();
-    }
-
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
         request.getHeaders().add("Authorization", "Bearer " + restClient.getToken());
