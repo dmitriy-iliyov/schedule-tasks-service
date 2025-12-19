@@ -17,7 +17,7 @@ Project components:
 - measure and record task execution times  
 - runtime configuration of scheduling and execution parameters via API  
 
-## Non-functional Requirements
+## Non-functional requirements
 
 - API for configuring schedule and execution properties in runtime;
 - HTTPS connection with core backend;
