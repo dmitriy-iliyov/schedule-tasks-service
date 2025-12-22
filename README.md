@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/dmitriy-iliyov/schedule-tasks-service/badge)](https://www.codefactor.io/repository/github/dmitriy-iliyov/schedule-tasks-service)
+
 ![Java](https://img.shields.io/badge/Java-17-007396?logo=openjdk)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-6DB33F?logo=springboot)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?logo=postgresql)
