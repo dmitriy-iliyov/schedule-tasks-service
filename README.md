@@ -24,7 +24,20 @@ Project components:
 - HTTPS connection with core backend;
 
 ## Run
+1. **Configure environment variables (`.docker_env `):**
+```properties
+DATABASE_URL=jdbc:postgresql://aid-compass-scheduled-tasks-postgresql:5432/aid_compass_scheduled_tasks_database
+DATABASE_USERNAME=admin
+DATABASE_PASSWORD=root
 
+API_PROTOCOL=http
+API_HOST=localhost
+API_PORT=8080
+
+SERVICE_NAME=schedule_task_service_name
+SERVICE_KEY=secret_service_key
+```
+2. Build and run
 ```bash
 docker compose build
 docker compose up -d
